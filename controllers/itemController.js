@@ -14,9 +14,11 @@ exports.createItem = async (req, res, next) => {
 
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
+        // Cloudinary returns file.path (full URL), local disk returns file.filename
+        const imageUrl = file.path || file.filename;
         await db.query(
           "INSERT INTO item_images (item_id, image_url) VALUES (?, ?)",
-          [itemId, file.filename]
+          [itemId, imageUrl]
         );
       }
     }
@@ -135,7 +137,12 @@ exports.getItem = async (req, res, next) => {
       ...items[0],
       views:   items[0].views   || 0,
       is_sold: items[0].is_sold || 0,
-      images:  images.map(img => `/uploads/${img.image_url}`),
+      images:  images.map(img => {
+      // If it's already a full URL (Cloudinary), use as-is
+      // If it's just a filename (local), prepend /uploads/
+      const url = img.image_url;
+      return url.startsWith('http') ? url : `/uploads/${url}`;
+    }),
     });
   } catch (error) {
     next(error);

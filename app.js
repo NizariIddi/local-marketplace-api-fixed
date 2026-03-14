@@ -48,7 +48,16 @@ app.use((req, res) => {
 // Global error handler (required for Express 5 async errors)
 app.use((err, req, res, next) => {
   console.error(`500 → ${req.method} ${req.originalUrl}`, err.message);
-  res.status(500).json({ message: "Internal server error", error: err.message });
+
+  // Multer-specific errors (file type, size, etc.)
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ message: "File too large. Maximum size is 5MB." });
+  }
+  if (err.message && err.message.includes('Invalid file type')) {
+    return res.status(400).json({ message: err.message });
+  }
+
+  res.status(500).json({ message: err.message || "Internal server error" });
 });
 
 const PORT = process.env.PORT || 5000;
