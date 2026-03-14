@@ -5,28 +5,22 @@ const fs      = require("fs");
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_MB   = 5;
 
-// ── CLOUDINARY (production) ──────────────────────────────────────────────────
-// If CLOUDINARY_URL env var is set, use Cloudinary storage
-// Otherwise fall back to local disk (development)
 let storage;
 
 if (process.env.CLOUDINARY_URL) {
-  const cloudinary             = require("cloudinary").v2;
+  const cloudinary             = require("cloudinary");
   const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
-  // cloudinary auto-configures from CLOUDINARY_URL env var
   storage = new CloudinaryStorage({
-    cloudinary,
+    cloudinary: cloudinary,
     params: {
-      folder:         "saleit-uploads",
+      folder:          "saleit-uploads",
       allowed_formats: ["jpg", "jpeg", "png", "webp", "gif"],
-      transformation: [{ width: 1200, crop: "limit", quality: "auto" }],
     },
   });
 
   console.log("✅ Using Cloudinary storage");
 } else {
-  // ── LOCAL DISK (development) ───────────────────────────────────────────────
   const uploadsDir = path.join(__dirname, "../uploads");
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });

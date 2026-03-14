@@ -9,13 +9,11 @@ const db = mysql.createPool({
   database:         process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit:  10,
-  // Required for Aiven and most cloud MySQL providers
   ssl: process.env.DB_SSL === 'false' ? false : {
     rejectUnauthorized: false,
   },
 });
 
-// Test connection on startup so you see errors in Railway logs immediately
 db.getConnection()
   .then(conn => {
     console.log('✅ Database connected successfully');
